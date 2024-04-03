@@ -20,11 +20,13 @@ public class TicTacToe implements Game<TicTacToe> {
 //        State<TicTacToe> state = new TicTacToe().runGame();
 //        if (state.winner().isPresent()) System.out.println("TicTacToe: winner is: " + state.winner().get());
 //        else System.out.println("TicTacToe: draw");
-//        System.out.println(state);
-
+//
+//        TicTacToeState ticTacToeState = (TicTacToeState) state;
+//        Position position = ticTacToeState.position();
+//        System.out.println("Current Situation: \n"+position.render());
         int[] testArray = new int[]{100, 250, 500, 1000, 2000, 4000};
         Random random = new Random();
-        long seed = 0;
+        long seed = -1;
 
 
         for(int i=0; i < testArray.length; i++){
@@ -35,7 +37,7 @@ public class TicTacToe implements Game<TicTacToe> {
             int opener = -1;
 
             for(int j=0; j<n; j++){
-                State<TicTacToe> state = new TicTacToe().runGame();
+                State<TicTacToe> state = new TicTacToe(seed).runGame();
                 opener = state.game().opener();
                 if(state.winner().isPresent()) {
                     if (state.winner().get() == 1) player1Win++;
@@ -47,9 +49,8 @@ public class TicTacToe implements Game<TicTacToe> {
                     Position position = ticTacToeState.position();
                 }
             }
-            System.out.printf("Total games: %d, opener: %d, player 0 wins %d, player 1 wins %d, draws %d\n", n, opener, player0Win, player1Win, n - player1Win - player0Win);
+            System.out.printf("Total Games: %d\n Opening Player: %d\n Player 0 Wins: %d\n Player 1 Wins: %d\n Draws: %d\n", n, opener, player0Win, player1Win, n - player1Win - player0Win);
         }
-
     }
 
     public static final int X = 1;
