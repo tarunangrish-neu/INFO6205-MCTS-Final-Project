@@ -29,27 +29,31 @@ public class TicTacToe implements Game<TicTacToe> {
         long seed = -1;
 
 
-        for(int i=0; i < testArray.length; i++){
+        for(int i=0; i < 1; i++){
 
             int n = testArray[i];
             int player0Win = 0;
             int player1Win = 0;
             int opener = -1;
 
-            for(int j=0; j<n; j++){
-                State<TicTacToe> state = new TicTacToe(seed).runGame();
+            for(int j=0; j<1; j++){
+                State<TicTacToe> state = new TicTacToe(random.nextLong()).runGame();
                 opener = state.game().opener();
                 if(state.winner().isPresent()) {
                     if (state.winner().get() == 1) player1Win++;
                     else player0Win++;
                     TicTacToeState ticTacToeState = (TicTacToeState) state;
                     Position position = ticTacToeState.position();
+                    System.out.println(position.render());
                 } else {
                     TicTacToeState ticTacToeState = (TicTacToeState) state;
                     Position position = ticTacToeState.position();
                 }
             }
-            System.out.printf("Total Games: %d\n Opening Player: %d\n Player 0 Wins: %d\n Player 1 Wins: %d\n Draws: %d\n", n, opener, player0Win, player1Win, n - player1Win - player0Win);
+//            System.out.printf("Total Games: %d\n Opening Player: %d\n Player 0 Wins: %d\n Player 1 Wins: %d\n Draws: %d\n", n, opener, player0Win, player1Win, n - player1Win - player0Win);
+//            Arrays.st
+
+
         }
     }
 
@@ -110,7 +114,7 @@ public class TicTacToe implements Game<TicTacToe> {
     }
 
     /**
-     * Secondary constructor.
+     * Secondary TicTacToeStateconstructor.
      *
      * @param seed a seed for the random source.
      */
