@@ -393,12 +393,12 @@ public class Board {
         StringBuilder sb = new StringBuilder();
         //get the board numbers
         sb.append("  ");
-        for (int i = 1; i <= SIDE_LENGTH; i++) {
+        for (int i = 0; i < SIDE_LENGTH; i++) {
         sb.append(i + " ");
         }
         sb.append('\n');
             for (int i = 0; i < SIDE_LENGTH; i++) {
-                sb.append(i+1+" ");
+                sb.append(i+" ");
             for (int j = 0; j < SIDE_LENGTH; j++) {
                 sb.append(render(state[i*SIDE_LENGTH + j]));
                sb.append(' ');

@@ -11,11 +11,48 @@ public class Checkers implements Game<Checkers> {
     public static final String ANSI_BLACK = "\u001B[30m";
     public static final String ANSI_RED = "\u001B[31m";
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
     State<Checkers> theGame = new Checkers().start();
     CheckersState checkersState = (CheckersState) theGame;
-    String output = ((CheckersState) theGame).render();
-        System.out.println(ANSI_RED + output + ANSI_RESET);
+//    String output = ((CheckersState) theGame).render();
+//        System.out.println(ANSI_RED + output + ANSI_RESET);
 //        ArrayList<Board> list = checkersState.board.getSuccessors(Player.PLAYER1);
+        while (!theGame.isTerminal()) {
+            System.out.println("Current state: ");
+            System.out.println(((CheckersState) theGame).render());
+            if(theGame.player() ==1) {
+                // human move
+                System.out.println("-------PLAYER 1's MOVE--------");
+                ArrayList<Board> list = checkersState.board.getSuccessors(Player.PLAYER1);
+                System.out.println("choose one of the move from the list below by entering the number");
+                for (int i = 0; i < list.size(); i++) {
+                    System.out.println(i+1 + ": From Position (X):" + (list.get(i).getFromPos()%8) + " (Y):" +
+                            (list.get(i).getFromPos()/8) + " to Position (X):" + (list.get(i).getToPos()%8) +
+                            "(Y):"+(list.get(i).getToPos()/8));
+                }
+                int chosenMove = scanner.nextInt()-1;
+                System.out.println(chosenMove);
+                System.out.println("You choose " + chosenMove+1 + " from the list");
+                theGame = theGame.next(new CheckersMove(theGame.player(),list.get(chosenMove)));
+                checkersState = (CheckersState) theGame;
+            } else {
+                //MCTs move
+                System.out.println("-------PLAYER 2's MOVE--------");
+                ArrayList<Board> list = checkersState.board.getSuccessors(Player.PLAYER2);
+                System.out.println("choose one of the move from the list below by entering the number");
+                for (int i = 0; i < list.size(); i++) {
+                    System.out.println(i+1 + ": From Position (X):" + (list.get(i).getFromPos()%8) + " (Y):" +
+                            (list.get(i).getFromPos()/8) + " to Position (X):" + (list.get(i).getToPos()%8) +
+                            "(Y):"+(list.get(i).getToPos()/8));
+                }
+                int chosenMove = scanner.nextInt()-1;
+                System.out.println(chosenMove);
+                System.out.println("You choose " + chosenMove+1 + " from the list");
+                theGame = theGame.next(new CheckersMove(theGame.player(),list.get(chosenMove)));
+                checkersState = (CheckersState) theGame;
+            }
+        }
     }
 
     @Override
