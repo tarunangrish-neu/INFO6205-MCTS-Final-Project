@@ -52,6 +52,7 @@ public class Board {
         board.kingCount = new HashMap<>();
         board.kingCount.put(Player.PLAYER1, 0);
         board.kingCount.put(Player.PLAYER2, 0);
+        board.turn = Player.PLAYER1;
         return board;
     }
 
@@ -361,6 +362,10 @@ public class Board {
      */
     public boolean isGameOver() {
         return (pieceCount.get(Player.PLAYER1) == 0 || pieceCount.get(Player.PLAYER2) == 0);
+    }
+
+    public int getSideLength() {
+        return SIDE_LENGTH;
     }
 
     /**

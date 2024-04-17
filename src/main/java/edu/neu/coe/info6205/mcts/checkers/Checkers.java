@@ -7,12 +7,15 @@ import edu.neu.coe.info6205.mcts.core.State;
 import java.util.*;
 
 public class Checkers implements Game<Checkers> {
-
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_BLACK = "\u001B[30m";
+    public static final String ANSI_RED = "\u001B[31m";
     public static void main(String[] args) {
     State<Checkers> theGame = new Checkers().start();
     CheckersState checkersState = (CheckersState) theGame;
     String output = ((CheckersState) theGame).render();
-        System.out.println(output);
+        System.out.println(ANSI_RED + output + ANSI_RESET);
+//        ArrayList<Board> list = checkersState.board.getSuccessors(Player.PLAYER1);
     }
 
     @Override
@@ -23,6 +26,46 @@ public class Checkers implements Game<Checkers> {
     @Override
     public int opener() {
         return 0;
+    }
+
+    public Board playerMove (Board board,int fromPos, int dx, int dy) {
+        int toPos = fromPos + dx + board.getSideLength() * dy;
+        if (toPos > board.state.length) {
+//            return MoveFeedback.NOT_ON_BOARD;
+            throw new RuntimeException("Move not on board" );
+        }
+        // check for forced jumped
+        ArrayList<Board> jumpSuccessors = board.getSuccessors(true);
+        boolean jumps = !jumpSuccessors.isEmpty();
+        if (jumps) {
+            for (Board succ : jumpSuccessors) {
+                if (succ.getFromPos() == fromPos && succ.getToPos() == toPos) {
+//                    updateState(succ);
+                    System.out.println("Move Successful");
+                    return succ;
+                }
+            }
+            throw new RuntimeException("It's a forced jump" );
+//            return MoveFeedback.FORCED_JUMP;
+        }
+//        return MoveFeedback.UNKNOWN_INVALID;
+        throw new RuntimeException("Check your move again");
+    }
+
+    static class CheckersMove implements Move<Checkers> {
+
+        @Override
+        public int player() {
+            return player;
+        }
+
+        public CheckersMove(int player, Board board) {
+            this.player = player;
+            this.board = board;
+        }
+
+        private final int player;
+        private final Board board;
     }
 
  class CheckersState implements State<Checkers> {
@@ -67,12 +110,18 @@ public class Checkers implements Game<Checkers> {
 
      @Override
      public Collection<Move<Checkers>> moves(int player) {
-         return List.of();
+        ArrayList<Move<Checkers>> moves = new ArrayList<>();
+        ArrayList<Board> nextMoves = board.getSuccessors(player);
+        for (Board nextBoard : nextMoves) { moves.add(new CheckersMove(player, nextBoard)); }
+
+         return moves;
      }
 
      @Override
      public State<Checkers> next(Move<Checkers> move) {
-         return null;
+         CheckersMove checkersMove = (CheckersMove) move;
+         Board board = checkersMove.board;
+         return new CheckersState(board);
      }
 
      @Override
