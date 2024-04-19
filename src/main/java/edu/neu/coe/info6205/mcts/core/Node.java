@@ -64,15 +64,18 @@ public interface Node<G extends Game> {
      */
     int wins();
 
+    void setWins(int wins);
+
     /**
      * @return the number of playouts evaluated (including this node). A leaf node will have a playouts value of 1.
      */
     int playouts();
 
+    void setPlayouts(int playout);
 
-    void incrementPlayouts();
-    void addWins(int wins);
-    Node<G> getParent();// add 3 more method
+    // Add methods to handle parent node
+    Node<G> getParent();
+    void setParent(Node<G> parent);
 
     private void addChildren(final State<G> state) {
         for (Iterator<Move<G>> it = state.moveIterator(state.player()); it.hasNext(); )

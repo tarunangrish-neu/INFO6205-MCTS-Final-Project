@@ -1,143 +1,108 @@
 package edu.neu.coe.info6205.mcts.tictactoe;
-
 import edu.neu.coe.info6205.mcts.core.Move;
 import edu.neu.coe.info6205.mcts.core.Node;
 import edu.neu.coe.info6205.mcts.core.State;
-import edu.neu.coe.info6205.mcts.tictactoe.UCT;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Random;
 
-import java.util.*;
 
+/**
+ * Class to represent a Monte Carlo Tree Search for TicTacToe.
+ */
 public class MCTS {
-    private final Node<TicTacToe> root;
-    private final Random random = new Random();
-    private static final double EXPLORATION_CONSTANT = Math.sqrt(2);
-
-    public MCTS(Node<TicTacToe> root) {
-        this.root = root;
-    }
-
-    public Node<TicTacToe> runMCTS(int iterations) {
-        for (int i = 0; i < iterations; i++) {
-            Node<TicTacToe> selectedNode = select(root);
-            if (!selectedNode.isLeaf()) {
-                selectedNode = expand(selectedNode);
-            }
-            int simulationResult = simulate(selectedNode.state());
-            backPropagate(selectedNode, simulationResult);
+    public static TicTacToeNode root;
+    Random random = new Random();
+    public static void main(String[] args) {
+        TicTacToe game = new TicTacToe();
+        root = new TicTacToeNode(game.start());
+        MCTS mcts = new MCTS(root);
+        mcts.run(100000);
+            if (root.children().isEmpty()) {
+                System.out.println("No moves available.");
+            } else {
+                Node<TicTacToe> bestMove = mcts.bestChild(root);
+                if (bestMove != null) {
+                    System.out.println("Recommended move: " + bestMove.state().toString());
+                } else {
+                    System.out.println("No best move could be determined.");
+                }
         }
-        return UCT.findNodeWithHighestUCT(root);
-    }
 
+        // This is where you process the MCTS to try to win the game.
+    }
+    public void run(int iterations) {
+        for (int i = 0; i < iterations; i++) {
+            Node<TicTacToe> node = select(root);
+            int result = simulate(node);
+            backPropagate(node, result);
+        }
+    }
     Node<TicTacToe> select(Node<TicTacToe> node) {
         while (!node.isLeaf()) {
-            if (isFullyExpanded(node)) {
-                node = UCT.findNodeWithHighestUCT(node);
+            if (!node.children().isEmpty()) {
+                node = bestChild(node);
             } else {
+                node.explore();
                 return node;
             }
         }
         return node;
     }
 
-    private boolean isFullyExpanded(Node<TicTacToe> node) {
-        return node.children().size() >= node.state().moves(node.state().player()).size();
-    }
-
-    Node<TicTacToe> expand(Node<TicTacToe> node) {
-        List<Move<TicTacToe>> moves = new ArrayList<>(node.state().moves(node.state().player()));
-        Move<TicTacToe> selectedMove = selectStrategicMove(moves, node.state());
-        State<TicTacToe> newState = node.state().next(selectedMove);
-        Node<TicTacToe> newNode = new TicTacToeNode(newState, node);
-        node.children().add(newNode);
-        return newNode;
-    }
-
-    private Move<TicTacToe> selectStrategicMove(List<Move<TicTacToe>> moves, State<TicTacToe> state) {
-
-
-        return moves.stream().max(Comparator.comparing(move -> evaluateMovePotential(move, state))).orElse(null);
-    }
-
-    private double evaluateMovePotential(Move<TicTacToe> move, State<TicTacToe> state) {
-
-        State<TicTacToe> resultState = state.next(move);
-        if (resultState.winner().isPresent() && resultState.winner().get() == state.player()) {
-            return Double.MAX_VALUE;
+    Node<TicTacToe> bestChild(Node<TicTacToe> node) {
+        if (node.children().isEmpty()) {
+            return null;
         }
-
-        return Math.random();
+        return node.children().stream()
+                .max(Comparator.comparingDouble(this::UCT))
+                .orElseThrow(() -> new IllegalStateException("No best child found, but children list is not empty"));
     }
 
-    int simulate(State<TicTacToe> state) {
-        State<TicTacToe> tempState = state;
-        while (!tempState.isTerminal()) {
-            List<Move<TicTacToe>> moves = new ArrayList<>(tempState.moves(tempState.player()));
-            Move<TicTacToe> randomMove = moves.get(random.nextInt(moves.size()));
-            tempState = tempState.next(randomMove);
+
+    public double UCT(Node<TicTacToe> node) {
+        double c = Math.sqrt(2);
+        return node.wins() / (double) node.playouts() +
+                c * Math.sqrt(Math.log(node.getParent().playouts()) / (double) node.playouts());
+    }
+
+    int simulate(Node<TicTacToe> node) {
+        State<TicTacToe> state = node.state();
+        while (!state.isTerminal()) {
+            List<Move<TicTacToe>> moves = new ArrayList<>(state.moves(state.player()));
+            Move<TicTacToe> move = moves.get(random.nextInt(moves.size()));
+            state = state.next(move);
         }
-        return tempState.winner().orElse(-1);
+        return state.winner().orElse(-1);
     }
+
+    /* Result Tree and it's interpretations
+    -1 -> Draw
+    1 -> X is the Winner
+    0 -> O is the winner
+     */
 
     void backPropagate(Node<TicTacToe> node, int result) {
-        Node<TicTacToe> tempNode = node;
-        while (tempNode != null) {
-            tempNode.incrementPlayouts();
-            if (result == tempNode.state().player()) {
-                tempNode.addWins(1);
+        while (node != null) {
+            int playout = node.playouts();
+            node.setPlayouts(playout+1);
+            int win = node.wins();
+            if ((node.state().player() == 1 && result == 1)) { //Assuming X is the winner in this case
+                node.setWins(win + 2);
+
+            }else if((node.state().player() == 0 && result == 0)){ //Assuming O is the winner in this case
+                node.setWins(win - 1);
             }
-            tempNode = tempNode.getParent();
+            else if (result == -1) { //If there is a scenario, where we have to make the game as a draw and force the algorithm to look for scenarios where Draw has the highest reward
+                node.setWins(win + 1);
+            }
+            node = node.getParent();
         }
     }
 
-    public static void main(String[] args) {
-        int winCountAI = 0;
-        int winCountRandom = 0;
-        int numberOfGames = 1000;
-        boolean detailedPrint = false; // Set to true for a detailed print of the first game
-
-        for (int i = 0; i < numberOfGames; i++) {
-            TicTacToe game = new TicTacToe();
-            Node<TicTacToe> currentNode = new TicTacToeNode(game.start(), null);
-            MCTS mcts = new MCTS(currentNode);
-
-
-            while (!currentNode.state().isTerminal()) {
-                currentNode = mcts.runMCTS(1000);
-                if (i == 0 && detailedPrint) {
-                    System.out.println("Current Board State:");
-                    System.out.println(currentNode.state());
-                }
-                mcts = new MCTS(currentNode);  // Reset the MCTS with the new root
-            }
-
-            Optional<Integer> winner = currentNode.state().winner();
-            if (winner.isPresent() && winner.get() == 1) {  // Assuming player 1 (X) is the AI
-                winCountAI++;
-            }
-
-            if (i == 0 && detailedPrint) {
-                System.out.println("----- Running additional games to calculate win probability -----");
-                detailedPrint = false;
-            }
-
-            game = new TicTacToe();
-            currentNode = new TicTacToeNode(game.start(), null);
-            while (!currentNode.state().isTerminal()) {
-                List<Move<TicTacToe>> moves = new ArrayList<>(currentNode.state().moves(currentNode.state().player()));
-                Move<TicTacToe> randomMove = moves.get(new Random().nextInt(moves.size()));
-                currentNode = new TicTacToeNode(currentNode.state().next(randomMove), currentNode);
-            }
-
-            winner = currentNode.state().winner();
-            if (winner.isPresent() && winner.get() == 1) {
-                winCountRandom++;
-            }
-        }
-
-        double winProbabilityAI = (double) winCountAI / numberOfGames;
-        double winProbabilityRandom = (double) winCountRandom / numberOfGames;
-        System.out.println("AI (Player X) with MCTS won " + winCountAI + " out of " + numberOfGames + " games. Win Probability: " + winProbabilityAI);
-        System.out.println("Random (Player X) without MCTS won " + winCountRandom + " out of " + numberOfGames + " games. Win Probability: " + winProbabilityRandom);
+    public MCTS(TicTacToeNode root) {
+        MCTS.root = root;
     }
 
 }

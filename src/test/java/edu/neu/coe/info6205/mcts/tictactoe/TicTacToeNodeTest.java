@@ -3,6 +3,7 @@ package edu.neu.coe.info6205.mcts.tictactoe;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class TicTacToeNodeTest {
@@ -32,12 +33,19 @@ public class TicTacToeNodeTest {
 
     @Test
     public void children() {
-        // no tests yet
+        TicTacToe.TicTacToeState state = new TicTacToe().new TicTacToeState();
+        TicTacToeNode node = new TicTacToeNode(state);
+        assertTrue(node.children().isEmpty());
     }
 
     @Test
     public void addChild() {
-        // no tests yet
+        TicTacToe.TicTacToeState state = new TicTacToe().new TicTacToeState();
+        TicTacToeNode node = new TicTacToeNode(state);
+        TicTacToe.TicTacToeState childState = new TicTacToe().new TicTacToeState();
+
+        node.addChild(childState);
+        assertNotNull(node.children());
     }
 
     @Test

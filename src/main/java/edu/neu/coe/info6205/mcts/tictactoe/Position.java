@@ -62,10 +62,12 @@ public class Position {
         if (matrix[x][y] < 0) {
             // TO BE IMPLEMENTED
             matrix[x][y] = player;
-            return new Position(matrix, count+1, player);
+            return new Position(matrix, count + 1, player);
             // END SOLUTION
         }
-        throw new RuntimeException("Position is occupied: " + x + ", " + y);
+        else {
+            throw new RuntimeException("Position is occupied: " + x + ", " + y);
+        }
     }
 
     /**
@@ -78,8 +80,11 @@ public class Position {
         List<int[]> result = new ArrayList<>();
         for (int i = 0; i < gridSize; i++)
             for (int j = 0; j < gridSize; j++)
-                if (grid[i][j] < 0)
+                if (grid[i][j] < 0){
+                    // TO BE IMPLEMENTED
                     result.add(new int[]{i,j});
+                }
+
         ;
         // END SOLUTION
         return result;
@@ -141,45 +146,18 @@ public class Position {
      * @return true if there are three cells in a line that are the same and equal to the last player.
      */
     boolean threeInARow() {
-        // TO BE IMPLEMENTED
-        //check rows
         for (int i = 0; i < gridSize; i++) {
-            for (int j = 0; j < projectRow(i).length; j++) {
-                if(projectRow(i)[j] != last) {
-                    break;
-                } else if (j == projectRow(i).length-1) {
-                    return true;
-                }
-            }
-        }
-        //check columns
-        for (int i = 0; i < gridSize; i++) {
-            for (int j = 0; j < projectCol(i).length; j++) {
-                if(projectCol(i)[j] != last) {
-                    break;
-                } else if (j == projectCol(i).length-1) {
-                    return true;
-                }
-            }
-        }
-        //check first diagonal
-        for (int j = 0; j < projectDiag(true).length; j++) {
-            if(projectDiag(true)[j] != last) {
-                break;
-            } else if (j == projectDiag(true).length-1) {
+            if ((projectRow(i)[0] == last && projectRow(i)[1] == last && projectRow(i)[2] == last) ||
+                    (projectCol(i)[0] == last && projectCol(i)[1] == last && projectCol(i)[2] == last))
+            {
                 return true;
             }
         }
-        //check last diagonal
-        for (int j = 0; j < projectDiag(false).length; j++) {
-            if(projectDiag(false)[j] != last) {
-                break;
-            } else if (j == projectDiag(false).length-1) {
-                return true;
-            }
-        }
-        return false;
+        return (grid[0][0] == last && grid[1][1] == last && grid[2][2] == last) ||
+                (grid[0][2] == last && grid[1][1] == last && grid[2][0] == last);
     }
+
+
 
     /**
      * Project row i.
@@ -300,16 +278,15 @@ public class Position {
      * @param i2     second row.
      * @param j2     second column.
      */
-    private void swap(int[][] matrix, int i1, int j1, int i2, int j2) {
+    public void swap(int[][] matrix, int i1, int j1, int i2, int j2) {
         int temp = matrix[i1][j1];
         matrix[i1][j1] = matrix[i2][j2];
         matrix[i2][j2] = temp;
     }
 
-    private final int[][] grid;
+    public final int[][] grid;
     final int last;
     private final int count;
     private final static int gridSize = 3;
     private final int[] xxx;
 }
-
