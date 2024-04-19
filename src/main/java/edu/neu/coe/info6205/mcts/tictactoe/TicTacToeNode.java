@@ -82,6 +82,10 @@ public class TicTacToeNode implements Node<TicTacToe> {
         initializeNodeData();
     }
 
+    public State<TicTacToe> getState() {
+        return state;
+    }
+
     private void initializeNodeData() {
         if (isLeaf()) {
             playouts = 1;

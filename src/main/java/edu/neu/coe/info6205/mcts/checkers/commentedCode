@@ -1,0 +1,14 @@
+
+//code below is for player manual entry
+ System.out.println("choose one of the move from the list below by entering the number");
+                for (int i = 0; i < list.size(); i++) {
+                    System.out.println(i+1 + ": From Position (X):" + (list.get(i).getFromPos()%8) + " (Y):" +
+                            (list.get(i).getFromPos()/8) + " to Position (X):" + (list.get(i).getToPos()%8) +
+                            "(Y):"+(list.get(i).getToPos()/8));
+                }
+                int chosenMove = scanner.nextInt()-1;
+                System.out.println(chosenMove);
+                System.out.println("You choose " + chosenMove+1 + " from the list");
+
+                // trying to convert usage from board to state to use node class
+                    //safe keeping main() code for player 2 below

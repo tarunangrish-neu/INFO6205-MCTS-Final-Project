@@ -1,7 +1,8 @@
 package edu.neu.coe.info6205.mcts.checkers;
-
+import edu.neu.coe.info6205.mcts.checkers.MCTs;
 import edu.neu.coe.info6205.mcts.core.Game;
 import edu.neu.coe.info6205.mcts.core.Move;
+import edu.neu.coe.info6205.mcts.core.Node;
 import edu.neu.coe.info6205.mcts.core.State;
 
 import java.util.*;
@@ -13,46 +14,68 @@ public class Checkers implements Game<Checkers> {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-    State<Checkers> theGame = new Checkers().start();
-    CheckersState checkersState = (CheckersState) theGame;
+
 //    String output = ((CheckersState) theGame).render();
 //        System.out.println(ANSI_RED + output + ANSI_RESET);
 //        ArrayList<Board> list = checkersState.board.getSuccessors(Player.PLAYER1);
-        while (!theGame.isTerminal()) {
-            System.out.println("Current state: ");
-            System.out.println(((CheckersState) theGame).render());
-            if(theGame.player() ==1) {
-                // human move
-                System.out.println("-------PLAYER 1's MOVE--------");
-                ArrayList<Board> list = checkersState.board.getSuccessors(Player.PLAYER1);
-                System.out.println("choose one of the move from the list below by entering the number");
-                for (int i = 0; i < list.size(); i++) {
-                    System.out.println(i+1 + ": From Position (X):" + (list.get(i).getFromPos()%8) + " (Y):" +
-                            (list.get(i).getFromPos()/8) + " to Position (X):" + (list.get(i).getToPos()%8) +
-                            "(Y):"+(list.get(i).getToPos()/8));
+        int player1wins = 0;
+        int player2wins = 0;
+        int gameIterations = 8;
+        int depth =7;
+        long startTime = System.currentTimeMillis();
+        for (int i = 0; i< gameIterations; i++) {
+            State<Checkers> theGame = new Checkers().start();
+            CheckersState checkersState = (CheckersState) theGame;
+            System.out.println(checkersState.board.getSuccessors(Player.PLAYER1).size());
+            while (!theGame.isTerminal()) {
+                System.out.println("Current state: ");
+                System.out.println(((CheckersState) theGame).render());
+                if (theGame.player() == 0) {
+                    // human move
+                    System.out.println("-------PLAYER 1's MOVE--------");
+                    //----------------HUMAN INPUT CODE ------------------
+//                ArrayList<Board> list = checkersState.board.getSuccessors(Player.PLAYER1);
+//                System.out.println("choose one of the move from the list below by entering the number");
+//                for (int i = 0; i < list.size(); i++) {
+//                    System.out.println(i+1 + ": From Position (X):" + (list.get(i).getFromPos()%8) + " (Y):" +
+//                            (list.get(i).getFromPos()/8) + " to Position (X):" + (list.get(i).getToPos()%8) +
+//                            "(Y):"+(list.get(i).getToPos()/8));
+//                }
+//                int chosenMove = scanner.nextInt()-1;
+//                System.out.println(chosenMove);
+//                System.out.println("You choose " + chosenMove+1 + " from the list");
+//                theGame = theGame.next(new CheckersMove(theGame.player(),list.get(chosenMove)));
+//                checkersState = (CheckersState) theGame;
+
+                    // ----------------------- AI VS AI ------------------
+                    MCTs mcTs = new MCTs(Player.PLAYER1, depth);
+                    Board board = mcTs.move(((CheckersState) theGame).board, Player.PLAYER1);
+                    theGame = theGame.next(new CheckersMove(theGame.player(), board));
+                    checkersState = (CheckersState) theGame;
+                    System.out.println("System1 Moved!");
+                } else {
+                    //MCTs move
+                    System.out.println("-------PLAYER 2's MOVE(MCTS)--------");
+//                ArrayList<Board> list = checkersState.board.getSuccessors(Player.PLAYER2);
+                    MCTs mcTs = new MCTs(Player.PLAYER2, depth);
+                    Board board = mcTs.move(((CheckersState) theGame).board, Player.PLAYER2);
+                    theGame = theGame.next(new CheckersMove(theGame.player(), board));
+                    checkersState = (CheckersState) theGame;
+                    System.out.println("System2 Moved!");
                 }
-                int chosenMove = scanner.nextInt()-1;
-                System.out.println(chosenMove);
-                System.out.println("You choose " + chosenMove+1 + " from the list");
-                theGame = theGame.next(new CheckersMove(theGame.player(),list.get(chosenMove)));
-                checkersState = (CheckersState) theGame;
-            } else {
-                //MCTs move
-                System.out.println("-------PLAYER 2's MOVE--------");
-                ArrayList<Board> list = checkersState.board.getSuccessors(Player.PLAYER2);
-                System.out.println("choose one of the move from the list below by entering the number");
-                for (int i = 0; i < list.size(); i++) {
-                    System.out.println(i+1 + ": From Position (X):" + (list.get(i).getFromPos()%8) + " (Y):" +
-                            (list.get(i).getFromPos()/8) + " to Position (X):" + (list.get(i).getToPos()%8) +
-                            "(Y):"+(list.get(i).getToPos()/8));
-                }
-                int chosenMove = scanner.nextInt()-1;
-                System.out.println(chosenMove);
-                System.out.println("You choose " + chosenMove+1 + " from the list");
-                theGame = theGame.next(new CheckersMove(theGame.player(),list.get(chosenMove)));
-                checkersState = (CheckersState) theGame;
+            }
+            System.out.println(theGame.winner().get());
+            if(theGame.winner().get()==(Player.PLAYER1.ordinal())) {
+                player1wins++;
+            } else if(theGame.winner().get()==(Player.PLAYER2.ordinal())){
+                player2wins++;
             }
         }
+        long endTime = System.currentTimeMillis();
+        long totalTime = endTime - startTime;
+        System.out.println("Total time for Checkers: " + totalTime + "ms");
+        System.out.println("Player 1 wins: " + player1wins);
+        System.out.println("Player 2 wins: " + player2wins);
     }
 
     @Override
@@ -63,30 +86,6 @@ public class Checkers implements Game<Checkers> {
     @Override
     public int opener() {
         return 0;
-    }
-
-    public Board playerMove (Board board,int fromPos, int dx, int dy) {
-        int toPos = fromPos + dx + board.getSideLength() * dy;
-        if (toPos > board.state.length) {
-//            return MoveFeedback.NOT_ON_BOARD;
-            throw new RuntimeException("Move not on board" );
-        }
-        // check for forced jumped
-        ArrayList<Board> jumpSuccessors = board.getSuccessors(true);
-        boolean jumps = !jumpSuccessors.isEmpty();
-        if (jumps) {
-            for (Board succ : jumpSuccessors) {
-                if (succ.getFromPos() == fromPos && succ.getToPos() == toPos) {
-//                    updateState(succ);
-                    System.out.println("Move Successful");
-                    return succ;
-                }
-            }
-            throw new RuntimeException("It's a forced jump" );
-//            return MoveFeedback.FORCED_JUMP;
-        }
-//        return MoveFeedback.UNKNOWN_INVALID;
-        throw new RuntimeException("Check your move again");
     }
 
     static class CheckersMove implements Move<Checkers> {
@@ -106,6 +105,10 @@ public class Checkers implements Game<Checkers> {
     }
 
  class CheckersState implements State<Checkers> {
+
+     public Board getBoard() {
+         return board;
+     }
 
      @Override
      public Checkers game() {
@@ -130,7 +133,7 @@ public class Checkers implements Game<Checkers> {
      public Optional<Integer> winner() {
          boolean isOver = isTerminal();
          if(isOver) {
-             boolean player1Status = board.pieceCount.get(Player.PLAYER1) == 0;
+             boolean player1Status = board.pieceCount.get(Player.PLAYER2) == 0;
              if (player1Status) {
                  return Optional.of(PLAYER1);
              }
@@ -187,6 +190,6 @@ public class Checkers implements Game<Checkers> {
 
      private final Board board;
  }
-    public static final int PLAYER1 = 1;
-    public static final int PLAYER2 = 0;
+    public static final int PLAYER1 = 0;
+    public static final int PLAYER2 = 1;
 }
